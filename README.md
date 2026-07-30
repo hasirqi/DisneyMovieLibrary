@@ -30,6 +30,7 @@ python3 -m http.server 8000
 - 中文与英文片名即时模糊搜索
 - 七大厂牌筛选
 - 年份升序 / 降序
+- 首页精选海报排序，可切换年份升序 / 降序
 - 每页 24 张卡片，避免大量 DOM 节点造成卡顿
 - 影片详情弹窗（导演、主演/配音、评分、片长与简介）
 - 明确的加载、数据源降级与空结果状态
@@ -69,3 +70,5 @@ python3 scripts/sync_wikimedia.py
 ```
 
 脚本从 Wikipedia 的迪士尼旗下主要电影分类获取影片列表，并通过 Wikipedia/Wikidata 补充中文标题、首映年份、简介、页面图片、导演和来源链接。生成结果会同时写入 `data/movies.json` 与供 `file://` 使用的 `data/movies.js`。Wikidata 结构化数据采用 CC0；Wikipedia 摘要与图片的具体许可请以相应来源页面为准。
+
+首页精选作品的海报预览图片来自 [The Movie Database (TMDB)](https://www.themoviedb.org/)。本项目不受 TMDB 认可或认证。

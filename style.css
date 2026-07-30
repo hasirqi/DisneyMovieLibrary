@@ -78,7 +78,7 @@ kbd { padding: 5px 8px; border: 1px solid #d3cec4; border-radius: 4px; backgroun
 .movie-card { position: relative; min-width: 0; background: #fff; border-bottom: 3px solid transparent; box-shadow: 0 8px 28px rgba(15,30,54,.07); cursor: pointer; transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease; overflow: hidden; }
 .movie-card:hover { transform: translateY(-7px); border-color: var(--gold); box-shadow: var(--shadow); }
 .poster { position: relative; aspect-ratio: 2 / 2.65; overflow: hidden; background: linear-gradient(145deg, var(--navy-2), var(--navy)); }
-.poster img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+.poster img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
 .movie-card:hover .poster img { transform: scale(1.035); }
 .poster-fallback { position: absolute; inset: 0; display: grid; place-items: center; padding: 22px; background: radial-gradient(circle at 70% 15%, rgba(214,169,68,.25), transparent 28%), linear-gradient(145deg, #173b67, #07152d); color: #ead9ae; text-align: center; font-family: Georgia, "Songti SC", serif; font-size: 25px; line-height: 1.3; }
 .poster-fallback::before { content: "✦"; position: absolute; top: 18px; left: 18px; color: var(--gold); font-size: 13px; }
@@ -105,6 +105,7 @@ kbd { padding: 5px 8px; border: 1px solid #d3cec4; border-radius: 4px; backgroun
 .footer .shell { display: flex; align-items: center; justify-content: space-between; gap: 25px; }
 .footer-brand { color: white; }
 .footer p { font-size: 11px; }
+.footer p a { color: #b9c4d2; }
 .footer button { border: 0; background: transparent; color: var(--gold); cursor: pointer; font-size: 12px; }
 
 .movie-dialog { width: min(860px, calc(100% - 28px)); max-height: min(88vh, 760px); padding: 0; border: 0; border-radius: 4px; background: #f8f5ef; color: var(--ink); box-shadow: 0 30px 100px rgba(0,0,0,.4); }

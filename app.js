@@ -13,7 +13,7 @@
     "真人电影": /live.action|pirates|maleficent|jungle cruise|tron|national treasure|mary poppins/i
   };
 
-  const state = { movies: [], filtered: [], studio: "全部", query: "", sort: "desc", page: 1 };
+  const state = { movies: [], filtered: [], studio: "全部", query: "", sort: "featured", page: 1 };
   const $ = (selector) => document.querySelector(selector);
   const els = {
     grid: $("#movieGrid"), status: $("#status"), empty: $("#emptyState"),
@@ -69,6 +69,7 @@
       runtime: text(item.runtime || item.duration, "—")
       ,source: text(item.source)
       ,source_url: text(item.source_url)
+      ,featured_rank: Number(item.featured_rank) || 0
     };
   };
 
@@ -167,7 +168,16 @@
     state.filtered = state.movies
       .filter((movie) => state.studio === "全部" || movie.studio === state.studio)
       .filter((movie) => `${movie.title_cn} ${movie.title_en}`.toLocaleLowerCase().includes(query))
-      .sort((a, b) => state.sort === "desc" ? (b.year - a.year || a.title_en.localeCompare(b.title_en)) : (a.year - b.year || a.title_en.localeCompare(b.title_en)));
+      .sort((a, b) => {
+        if (state.sort === "featured") {
+          const rankA = a.featured_rank || Number.MAX_SAFE_INTEGER;
+          const rankB = b.featured_rank || Number.MAX_SAFE_INTEGER;
+          return rankA - rankB || b.year - a.year || a.title_en.localeCompare(b.title_en);
+        }
+        return state.sort === "desc"
+          ? (b.year - a.year || a.title_en.localeCompare(b.title_en))
+          : (a.year - b.year || a.title_en.localeCompare(b.title_en));
+      });
     const maxPage = Math.max(1, Math.ceil(state.filtered.length / PAGE_SIZE));
     state.page = Math.min(state.page, maxPage);
     render();
@@ -248,8 +258,9 @@
     state.studio = button.dataset.studio; state.page = 1; renderFilters(); applyFilters();
   });
   els.sort.addEventListener("click", () => {
-    state.sort = state.sort === "desc" ? "asc" : "desc";
-    els.sort.querySelector("span").textContent = state.sort === "desc" ? "年份：新 → 旧" : "年份：旧 → 新";
+    state.sort = state.sort === "featured" ? "desc" : state.sort === "desc" ? "asc" : "featured";
+    els.sort.querySelector("span").textContent =
+      state.sort === "featured" ? "排序：精选推荐" : state.sort === "desc" ? "年份：新 → 旧" : "年份：旧 → 新";
     applyFilters();
   });
   els.pagination.addEventListener("click", (event) => {

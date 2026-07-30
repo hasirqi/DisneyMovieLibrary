@@ -42,6 +42,21 @@ CATEGORIES = [
     ("真人电影", "Disney Channel Original Movie films"),
 ]
 
+FEATURED_POSTERS = [
+    (("The Lion King", 1994), "https://image.tmdb.org/t/p/w500/sKCr78MXSLixwmZ8DyJLrpMsd15.jpg"),
+    (("Toy Story", 1995), "https://image.tmdb.org/t/p/w500/uXDfjJbdP4ijW5hWSBrPrlKpxab.jpg"),
+    (("Frozen", 2013), "https://image.tmdb.org/t/p/w500/itAKcobTYGpYT8Phwjd8c9hleTo.jpg"),
+    (("Avengers: Endgame", 2019), "https://image.tmdb.org/t/p/w500/ulzhLuWrPK07P1YkdWQLZnQh1JL.jpg"),
+    (("Coco", 2017), "https://image.tmdb.org/t/p/w500/6Ryitt95xrO8KXuqRGm1fUuNwqF.jpg"),
+    (("Avatar", 2009), "https://image.tmdb.org/t/p/w500/gKY6q7SjCkAU6FqvqWybDYgUKIF.jpg"),
+    (("Beauty and the Beast", 1991), "https://image.tmdb.org/t/p/w500/hUJ0UvQ5tgE2Z9WpfuduVSdiCiU.jpg"),
+    (("Moana", 2016), "https://image.tmdb.org/t/p/w500/m5MDZOIFEFlxGiLuAzWzFSsWcye.jpg"),
+    (("Black Panther", 2018), "https://image.tmdb.org/t/p/w500/uxzzxijgPIY7slzFvMotPv8wjKA.jpg"),
+    (("Up", 2009), "https://image.tmdb.org/t/p/w500/mFvoEwSfLqbcWwFsDjQebn9bzFe.jpg"),
+    (("Star Wars: A New Hope", 1977), "https://image.tmdb.org/t/p/w500/6FfCtAuVAW8XJjZ7eWeLibRLWTw.jpg"),
+    (("Pirates of the Caribbean: The Curse of the Black Pearl", 2003), "https://image.tmdb.org/t/p/w500/poHwCZeWzJCShH7tOjg8RIoyjcw.jpg"),
+]
+
 
 def chunks(values: list[str], size: int = 40) -> Iterable[list[str]]:
     for index in range(0, len(values), size):
@@ -235,7 +250,20 @@ def write_catalog(movies: list[dict[str, Any]]) -> None:
     )
 
 
+def apply_featured_posters(movies: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    featured = {key: (rank, url) for rank, (key, url) in enumerate(FEATURED_POSTERS, 1)}
+    for movie in movies:
+        key = (movie.get("title_en", ""), int(movie.get("year") or 0))
+        if key in featured:
+            rank, url = featured[key]
+            movie["poster_url"] = url
+            movie["featured_rank"] = rank
+        else:
+            movie.pop("featured_rank", None)
+    return movies
+
+
 if __name__ == "__main__":
-    catalog = build()
+    catalog = apply_featured_posters(build())
     write_catalog(catalog)
     print(f"Wrote {len(catalog)} unique titles")
