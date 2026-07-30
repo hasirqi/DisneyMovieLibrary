@@ -29,8 +29,15 @@
   };
   const unique = (items) => {
     const seen = new Set();
+    const titlesWithKnownYears = new Set(
+      items.filter((item) => Number(item.year) > 0).map((item) =>
+        `${item.title_en || item.title_cn}`.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, "")
+      )
+    );
     return items.filter((item) => {
-      const key = `${item.title_en || item.title_cn}`.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, "");
+      const titleKey = `${item.title_en || item.title_cn}`.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, "");
+      if (!Number(item.year) && titlesWithKnownYears.has(titleKey)) return false;
+      const key = `${titleKey}:${item.year || "unknown"}`;
       if (!key || seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -60,6 +67,8 @@
       cast: Array.isArray(item.cast) ? item.cast.join("、") : text(item.cast || item.actors || item.starring, "资料暂缺"),
       rating: Number.parseFloat(item.rating || item.imdbRating || item.score) || 0,
       runtime: text(item.runtime || item.duration, "—")
+      ,source: text(item.source)
+      ,source_url: text(item.source_url)
     };
   };
 
@@ -222,6 +231,7 @@
           <div class="dialog-meta"><span>${movie.year || "年份未知"}</span><span>${escapeHTML(movie.runtime)}</span><span>★ ${movie.rating ? movie.rating.toFixed(1) : "暂无评分"}</span></div>
           <p class="dialog-summary">${escapeHTML(movie.summary)}</p>
           <div class="credits"><div><small>导演</small><p>${escapeHTML(movie.director)}</p></div><div><small>主演 / 主要配音</small><p>${escapeHTML(movie.cast)}</p></div></div>
+          ${movie.source_url ? `<a class="source-link" href="${escapeHTML(movie.source_url)}" target="_blank" rel="noopener noreferrer">在 Wikipedia 查看来源 ↗</a>` : ""}
         </div>
       </div>`;
     els.dialog.showModal();

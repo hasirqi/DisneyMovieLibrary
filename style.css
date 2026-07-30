@@ -123,6 +123,7 @@ kbd { padding: 5px 8px; border: 1px solid #d3cec4; border-radius: 4px; backgroun
 .credits { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 26px; padding-top: 22px; border-top: 1px solid #ddd7cb; }
 .credits small { display: block; margin-bottom: 5px; color: #a27b2c; font-size: 10px; letter-spacing: .13em; }
 .credits p { margin: 0; font-size: 13px; line-height: 1.5; }
+.source-link { display: inline-block; margin-top: 24px; color: var(--red); font-size: 12px; text-decoration: none; border-bottom: 1px solid rgba(179,32,42,.35); }
 
 @media (max-width: 900px) {
   .movie-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }

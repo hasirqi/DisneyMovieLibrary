@@ -1,6 +1,6 @@
 # Disney Vault · 迪士尼影视作品数据库
 
-一个无需构建工具、可直接运行的纯前端影视资料库，覆盖迪士尼动画、皮克斯、漫威、星球大战、二十世纪影业、真人电影与自然纪录片。
+一个无需构建工具、可直接运行的纯前端影视资料库，覆盖迪士尼动画、皮克斯、漫威、星球大战、二十世纪影业、真人电影与自然纪录片。完整离线目录由 Wikipedia 分类与 Wikidata 结构化资料生成，并与人工整理的中文代表作数据合并。
 
 ## 运行
 
@@ -59,3 +59,13 @@ python3 -m http.server 8000
 ```
 
 `data/movies.js` 是为满足直接打开 `index.html` 的离线兼容镜像；权威本地兜底文件仍为 `data/movies.json`。
+
+## 更新百科片库
+
+需要联网，并要求系统安装 `curl`：
+
+```bash
+python3 scripts/sync_wikimedia.py
+```
+
+脚本从 Wikipedia 的迪士尼旗下主要电影分类获取影片列表，并通过 Wikipedia/Wikidata 补充中文标题、首映年份、简介、页面图片、导演和来源链接。生成结果会同时写入 `data/movies.json` 与供 `file://` 使用的 `data/movies.js`。Wikidata 结构化数据采用 CC0；Wikipedia 摘要与图片的具体许可请以相应来源页面为准。
