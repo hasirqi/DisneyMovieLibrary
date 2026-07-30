@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="浏览迪士尼动画、皮克斯、漫威、星球大战、二十世纪影业、真人电影与自然纪录片代表作。">
+  <title>Disney Vault · 迪士尼影视作品数据库</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2232%22 fill=%22%2307152d%22/><text x=%2232%22 y=%2243%22 text-anchor=%22middle%22 font-size=%2238%22 fill=%22%23d6a944%22>D</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero">
+    <nav class="nav shell" aria-label="主导航">
+      <a class="brand" href="#" aria-label="Disney Vault 首页">
+        <span class="brand-mark" aria-hidden="true">D</span>
+        <span>Disney <b>Vault</b></span>
+      </a>
+      <a class="nav-link" href="#library">探索片库 <span aria-hidden="true">↘</span></a>
+    </nav>
+    <div class="hero-glow glow-one"></div>
+    <div class="hero-glow glow-two"></div>
+    <div class="stars" aria-hidden="true"></div>
+    <section class="hero-content shell">
+      <p class="eyebrow"><span></span> A century of stories</p>
+      <h1>每一个世界，<br><em>都在这里相遇。</em></h1>
+      <p class="hero-copy">从手绘经典到浩瀚银河，探索跨越百年的迪士尼影视作品与角色宇宙。</p>
+      <div class="hero-stats">
+        <div><strong id="heroTotal">—</strong><span>部作品已收录</span></div>
+        <div><strong>7</strong><span>大影视厂牌</span></div>
+      </div>
+    </section>
+    <a class="scroll-hint" href="#library"><span>向下探索</span><i aria-hidden="true">↓</i></a>
+  </header>
+
+  <main id="library" class="library shell">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow dark"><span></span> The collection</p>
+        <h2>探索故事宝库</h2>
+      </div>
+      <p>当前显示 <strong id="visibleCount">0</strong> 部 · 共加载 <strong id="totalCount">0</strong> 部</p>
+    </div>
+
+    <section class="controls" aria-label="影片搜索与筛选">
+      <label class="search-box">
+        <span aria-hidden="true">⌕</span>
+        <input id="searchInput" type="search" placeholder="搜索中文或英文片名…" autocomplete="off">
+        <kbd>⌘ K</kbd>
+      </label>
+      <div class="filter-row">
+        <div id="studioFilters" class="filter-pills" role="group" aria-label="按厂牌筛选"></div>
+        <button id="sortButton" class="sort-button" type="button" aria-label="切换年份排序">
+          <span>年份：新 → 旧</span><i aria-hidden="true">⇅</i>
+        </button>
+      </div>
+    </section>
+
+    <div id="status" class="status loading" role="status" aria-live="polite">
+      <span class="loader"></span>
+      <div><strong>正在开启故事宝库</strong><small>正在连接影片数据源…</small></div>
+    </div>
+
+    <section id="movieGrid" class="movie-grid" aria-label="影片列表"></section>
+    <div id="emptyState" class="empty-state" hidden>
+      <span>✦</span><h3>没有找到匹配的作品</h3><p>试试缩短关键词，或选择其他厂牌。</p>
+    </div>
+
+    <nav id="pagination" class="pagination" aria-label="影片分页"></nav>
+  </main>
+
+  <footer class="footer">
+    <div class="shell">
+      <div class="brand footer-brand"><span class="brand-mark" aria-hidden="true">D</span><span>Disney <b>Vault</b></span></div>
+      <p>为热爱故事的人整理 · 数据来自公开 API 与本地精选片库</p>
+      <button id="backToTop" type="button">回到顶部 ↑</button>
+    </div>
+  </footer>
+
+  <dialog id="movieDialog" class="movie-dialog">
+    <button class="dialog-close" type="button" aria-label="关闭详情">×</button>
+    <div id="dialogContent"></div>
+  </dialog>
+
+  <script src="data/movies.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
