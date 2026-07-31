@@ -85,6 +85,9 @@
       ,cast_en: englishCredit(item.cast_en || item.cast)
       ,summary_cn: text(item.summary_cn || item.summary, "暂无中文简介。")
       ,summary_en: cleanEnglishSynopsis(item.summary_en || item.summary)
+      ,catalog_id: text(item.catalog_id)
+      ,duplicate_of: text(item.duplicate_of)
+      ,alias_titles: Array.isArray(item.alias_titles) ? item.alias_titles : []
     };
   };
 
@@ -187,8 +190,9 @@
   function applyFilters() {
     const query = state.query.toLocaleLowerCase();
     state.filtered = state.movies
+      .filter((movie) => !movie.duplicate_of)
       .filter((movie) => state.studio === "全部" || movie.studio === state.studio)
-      .filter((movie) => `${movie.title_cn} ${movie.title_en}`.toLocaleLowerCase().includes(query))
+      .filter((movie) => `${movie.title_cn} ${movie.title_en} ${movie.alias_titles.join(" ")}`.toLocaleLowerCase().includes(query))
       .sort((a, b) => {
         if (state.sort === "featured") {
           const rankA = a.featured_rank || Number.MAX_SAFE_INTEGER;
