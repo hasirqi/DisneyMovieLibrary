@@ -93,3 +93,7 @@ python3 scripts/sync_wikimedia.py
 运行 `python3 scripts/enrich_movie_details.py` 可通过 Wikidata 的导演、演员及配音属性补齐双语演职人员，并生成 `summary_cn` / `summary_en` 双语简介。中文机器译文缓存于 `data/chinese_summaries.json`，人员标签缓存于 `data/people_labels.json`。
 
 首页精选作品的海报预览图片来自 [The Movie Database (TMDB)](https://www.themoviedb.org/)。本项目不受 TMDB 认可或认证。
+
+运行 `python3 scripts/enrich_posters.py --limit 250` 可按厂牌优先级补充海报。脚本只接受现有 Wikidata 实体的 TMDB 影片 ID，不按片名猜测匹配；图片地址会写回 `movies.json` 与离线镜像 `movies.js`，查询结果缓存于 `data/poster_cache.json`。
+
+当前已收录 602 张影片图片，其中本轮通过 Wikidata → TMDB ID 的确定性关联新增 452 张正式海报。厂牌覆盖包括迪士尼动画 122/135、皮克斯 33/45、漫威 43/47、星球大战 38/50、纪录片 17/26、真人电影 224/806。
