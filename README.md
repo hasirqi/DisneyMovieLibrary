@@ -73,4 +73,6 @@ python3 scripts/sync_wikimedia.py
 
 如需为没有中文百科标签的长尾影片补齐中文名，运行 `python3 scripts/enrich_chinese_titles.py`。脚本优先采用 Wikidata 中文标签，其余条目使用机器辅助译名，并通过 `title_cn_source` 字段明确标记，不将其冒充为官方译名。
 
+运行 `python3 scripts/enrich_movie_details.py` 可通过 Wikidata 的导演、演员及配音属性补齐双语演职人员，并生成 `summary_cn` / `summary_en` 双语简介。中文机器译文缓存于 `data/chinese_summaries.json`，人员标签缓存于 `data/people_labels.json`。
+
 首页精选作品的海报预览图片来自 [The Movie Database (TMDB)](https://www.themoviedb.org/)。本项目不受 TMDB 认可或认证。

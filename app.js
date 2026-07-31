@@ -71,6 +71,12 @@
       ,source_url: text(item.source_url)
       ,featured_rank: Number(item.featured_rank) || 0
       ,title_cn_source: text(item.title_cn_source)
+      ,director_cn: text(item.director_cn || item.director, "资料暂缺")
+      ,director_en: text(item.director_en || item.director, "Not available")
+      ,cast_cn: text(item.cast_cn || item.cast, "资料暂缺")
+      ,cast_en: text(item.cast_en || item.cast, "Not available")
+      ,summary_cn: text(item.summary_cn || item.summary, "暂无中文简介。")
+      ,summary_en: text(item.summary_en || item.summary, "No English synopsis available.")
     };
   };
 
@@ -244,8 +250,15 @@
           <h2>${escapeHTML(movie.title_cn)}</h2>
           <p class="dialog-en">${escapeHTML(movie.title_en)}</p>
           <div class="dialog-meta"><span>${movie.year || "年份未知"}</span><span>${escapeHTML(movie.runtime)}</span><span>★ ${movie.rating ? movie.rating.toFixed(1) : "暂无评分"}</span>${movie.title_cn_source === "machine_translation" ? "<span>机器辅助译名</span>" : ""}</div>
-          <p class="dialog-summary">${escapeHTML(movie.summary)}</p>
-          <div class="credits"><div><small>导演</small><p>${escapeHTML(movie.director)}</p></div><div><small>主演 / 主要配音</small><p>${escapeHTML(movie.cast)}</p></div></div>
+          <div class="dialog-lang-tabs" role="group" aria-label="详情语言"><button class="active" type="button" data-dialog-lang="cn">中文</button><button type="button" data-dialog-lang="en">English</button></div>
+          <div data-dialog-panel="cn">
+            <p class="dialog-summary">${escapeHTML(movie.summary_cn)}</p>
+            <div class="credits"><div><small>导演</small><p>${escapeHTML(movie.director_cn)}</p></div><div><small>主演 / 主要配音</small><p>${escapeHTML(movie.cast_cn)}</p></div></div>
+          </div>
+          <div data-dialog-panel="en" hidden>
+            <p class="dialog-summary" lang="en">${escapeHTML(movie.summary_en)}</p>
+            <div class="credits"><div><small>DIRECTOR</small><p>${escapeHTML(movie.director_en)}</p></div><div><small>CAST / VOICES</small><p>${escapeHTML(movie.cast_en)}</p></div></div>
+          </div>
           ${movie.source_url ? `<a class="source-link" href="${escapeHTML(movie.source_url)}" target="_blank" rel="noopener noreferrer">在 Wikipedia 查看来源 ↗</a>` : ""}
         </div>
       </div>`;
@@ -278,6 +291,13 @@
   els.grid.addEventListener("keydown", (event) => { if (["Enter", " "].includes(event.key)) { event.preventDefault(); openMovie(event.target.closest("[data-id]")?.dataset.id); } });
   $(".dialog-close").addEventListener("click", () => els.dialog.close());
   els.dialog.addEventListener("click", (event) => { if (event.target === els.dialog) els.dialog.close(); });
+  els.dialog.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-dialog-lang]");
+    if (!button) return;
+    const language = button.dataset.dialogLang;
+    els.dialog.querySelectorAll("[data-dialog-lang]").forEach((item) => item.classList.toggle("active", item === button));
+    els.dialog.querySelectorAll("[data-dialog-panel]").forEach((panel) => { panel.hidden = panel.dataset.dialogPanel !== language; });
+  });
   $("#backToTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   document.addEventListener("keydown", (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); els.search.focus(); }

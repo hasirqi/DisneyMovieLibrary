@@ -13,7 +13,7 @@ from pathlib import Path
 from sync_wikimedia import JSON_PATH, WIKIDATA_API, api, chunks, write_catalog
 
 CACHE_PATH = Path(__file__).resolve().parents[1] / "data" / "chinese_titles.json"
-SEPARATOR = " ||| "
+SEPARATOR = "\n[[[DMLSEP]]]\n"
 MANUAL_OVERRIDES = {
     "Lilo & Scratch": "莉萝与史迪奇",
     "Xuxa Gêmeas": "舒莎双胞胎",
@@ -68,7 +68,7 @@ def google_translate(texts: list[str]) -> list[str]:
     raw = subprocess.check_output(["curl", "-fsSL", "--retry", "3", "-A", "DisneyMovieLibrary/2.1", url], text=True)
     payload = json.loads(raw)
     translated = "".join(piece[0] for piece in payload[0] if piece and piece[0])
-    parts = [part.strip() for part in re.split(r"\s*\|\|\|\s*", translated)]
+    parts = [part.strip() for part in translated.split("[[[DMLSEP]]]")]
     if len(parts) != len(texts):
         if len(texts) == 1:
             return [translated.strip()]
