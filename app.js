@@ -12,13 +12,6 @@
     "纪录片": /disneynature|documentary|nature|earth|ocean|chimpanzee|penguin/i,
     "真人电影": /live.action|pirates|maleficent|jungle cruise|tron|national treasure|mary poppins/i
   };
-  // These generic Wikipedia pages were matched by title rather than by film
-  // identity (for example, "Tiger" resolved to an actor). They are excluded
-  // until a verified film page or stable external ID is available.
-  const INVALID_DOCUMENTARY_SOURCE_IDS = new Set([
-    "302167", "24408", "106344", "19562099", "6124412", "3094666",
-    "255814", "210425", "4814521", "217241", "414113"
-  ]);
   const UNRELIABLE_SYNOPSIS_PATTERNS = [
     /in the Disney catalog/i,
     /\bis an (?:American|British|Indian|Canadian|Australian|Japanese) (?:actor|actress|voice actor|film composer|television personality)\b/i,
@@ -44,32 +37,6 @@
     const match = text(value).match(/\b(19|20)\d{2}\b/);
     return match ? Number(match[0]) : 0;
   };
-  const canonicalTitle = (item) => `${item.title_en || item.title_cn}`
-    .toLowerCase()
-    .replace(/\s*\((?:\d{4}\s+)?film\)\s*$/i, "")
-    .replace(/[^a-z0-9\u4e00-\u9fff]/g, "");
-  const recordQuality = (item) => [
-    item.year ? 2 : 0,
-    item.poster_url ? 1 : 0,
-    item.director_en && item.director_en !== "Not available" ? 1 : 0,
-    item.cast_en && item.cast_en !== "Not available" ? 1 : 0,
-    item.summary_en && item.summary_en !== "No verified English synopsis available." ? 4 : 0,
-    /\((?:\d{4}\s+)?film\)$/i.test(item.title_en || "") ? 1 : 0
-  ].reduce((sum, value) => sum + value, 0);
-  const unique = (items) => {
-    const titlesWithKnownYears = new Set(
-      items.filter((item) => Number(item.year) > 0).map(canonicalTitle)
-    );
-    const selected = new Map();
-    items.forEach((item) => {
-      const titleKey = canonicalTitle(item);
-      if (!Number(item.year) && titlesWithKnownYears.has(titleKey)) return false;
-      const key = `${item.studio}:${titleKey}:${item.year || "unknown"}`;
-      const current = selected.get(key);
-      if (!current || recordQuality(item) > recordQuality(current)) selected.set(key, item);
-    });
-    return [...selected.values()];
-  };
   const classifyStudio = (raw, title = "") => {
     const haystack = `${raw} ${title}`;
     if (STUDIOS.includes(raw)) return raw;
@@ -85,11 +52,6 @@
     }
     return synopsis;
   };
-  const removeKnownBadMatches = (items) => items.filter((item) => {
-    if (item.studio !== "纪录片") return true;
-    const sourceId = text(item.source_url).match(/curid=(\d+)/)?.[1];
-    return !sourceId || !INVALID_DOCUMENTARY_SOURCE_IDS.has(sourceId);
-  });
   const normalize = (item, index = 0) => {
     const titleEn = text(item.title_en || item.title || item.name || item.originalTitle, "Unknown title");
     const titleCn = text(item.title_cn || item.chineseTitle, titleEn);
@@ -171,7 +133,7 @@
   async function loadMovies() {
     const local = await loadLocal();
     if (local.length) {
-      state.movies = unique(removeKnownBadMatches(local));
+      state.movies = local.map((movie, index) => ({ ...movie, id: `${movie.id}-${index}` }));
       showStatus("loading", "本地片库已就绪", `已先载入 ${local.length} 部精选作品，正在尝试同步公开数据源…`, true);
       applyFilters();
     }
@@ -194,7 +156,9 @@
     // verified bilingual titles. Keep it authoritative once it is complete;
     // remote results remain useful only when the local catalog is small.
     const combined = local.length >= 800 ? local : [...apiMovies, ...local];
-    state.movies = unique(removeKnownBadMatches(combined)).map((movie, index) => ({ ...movie, id: `${movie.id}-${index}` }));
+    // A complete archive keeps every catalog record. Suspect metadata is
+    // flagged in the detail view instead of removing the film from the library.
+    state.movies = combined.map((movie, index) => ({ ...movie, id: `${movie.id}-${index}` }));
     if (!state.movies.length) throw new Error("远程接口与本地数据均不可用");
     if (failures.length) {
       showStatus("warning", "已启用本地精选片库", `远程数据源暂时不可用；当前仍可浏览、搜索与筛选 ${state.movies.length} 部作品。`, false);
@@ -309,8 +273,8 @@
           </dl>
           <section class="synopsis${synopsisMissing ? " synopsis-review" : ""}" aria-labelledby="synopsisTitle">
             <div class="section-label-row"><h3 id="synopsisTitle">Synopsis</h3><span>${synopsisMissing ? "Source review needed" : `${completeness}% record complete`}</span></div>
-            <div class="synopsis-language" lang="en"><small>ENGLISH</small><p class="dialog-summary">${escapeHTML(synopsis)}</p></div>
-            <div class="synopsis-language synopsis-cn" lang="zh-CN"><small>中文翻译</small><p class="dialog-summary">${escapeHTML(synopsisCn)}</p></div>
+            <div class="synopsis-language" lang="en"><p class="dialog-summary">${escapeHTML(synopsis)}</p></div>
+            <div class="synopsis-language synopsis-cn" lang="zh-CN"><p class="dialog-summary">${escapeHTML(synopsisCn)}</p></div>
           </section>
           ${movie.title_cn_source === "machine_translation" ? "<div class=\"dialog-actions\"><span class=\"translation-note\">Chinese title is machine-assisted</span></div>" : ""}
         </div>

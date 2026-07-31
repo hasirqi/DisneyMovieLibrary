@@ -130,7 +130,6 @@ kbd { padding: 5px 8px; border: 1px solid #d3cec4; border-radius: 4px; backgroun
 .section-label-row span { color: #8a929e; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
 .dialog-summary { margin: 10px 0 0; color: #4f5a69; line-height: 1.75; font-size: 13px; }
 .synopsis-language { margin-top: 13px; }
-.synopsis-language small { color: #9b752a; font-size: 9px; font-weight: 700; letter-spacing: .14em; }
 .synopsis-cn { margin-top: 16px; padding-top: 14px; border-top: 1px solid #ddd7cb; }
 .synopsis-cn .dialog-summary { color: #394658; }
 .synopsis-review { padding: 14px 16px; border-left: 3px solid var(--gold); background: rgba(214,169,68,.09); }
