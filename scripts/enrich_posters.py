@@ -79,6 +79,7 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=250, help="maximum missing posters to attempt")
     parser.add_argument("--studios", nargs="+", default=DEFAULT_STUDIOS, help="studio priority order")
     parser.add_argument("--delay", type=float, default=0.12, help="delay between TMDB page requests")
+    parser.add_argument("--retry-empty", action="store_true", help="retry cached empty TMDB responses")
     args = parser.parse_args()
 
     movies: list[dict[str, Any]] = json.loads(JSON_PATH.read_text(encoding="utf-8"))
@@ -86,7 +87,10 @@ def main() -> None:
     priority = {studio: index for index, studio in enumerate(args.studios)}
     candidates = [
         movie for movie in movies
-        if not movie.get("poster_url") and movie.get("wikidata_id") and movie.get("studio") in priority
+        if not movie.get("duplicate_of")
+        and not movie.get("poster_url")
+        and movie.get("wikidata_id")
+        and movie.get("studio") in priority
     ]
     candidates.sort(key=lambda movie: (
         priority[movie["studio"]],
@@ -104,7 +108,7 @@ def main() -> None:
         if not movie_id:
             continue
         attempted += 1
-        if movie_id not in cache:
+        if movie_id not in cache or (args.retry_empty and not cache[movie_id]):
             try:
                 cache[movie_id] = poster_from_tmdb(movie_id)
             except subprocess.CalledProcessError:
@@ -120,7 +124,8 @@ def main() -> None:
             print(f"+ {movie['studio']} | {movie['title_en']} ({movie.get('year') or '?'})")
 
     write_catalog(movies)
-    print(f"Attempted {attempted}; added {updated} posters; total coverage {sum(bool(x.get('poster_url')) for x in movies)}/{len(movies)}")
+    primary = [movie for movie in movies if not movie.get("duplicate_of")]
+    print(f"Attempted {attempted}; added {updated} posters; primary coverage {sum(bool(x.get('poster_url')) for x in primary)}/{len(primary)}")
 
 
 if __name__ == "__main__":
