@@ -129,6 +129,8 @@ kbd { padding: 5px 8px; border: 1px solid #d3cec4; border-radius: 4px; backgroun
 .section-label-row h3 { margin: 0; font-family: Georgia, serif; font-size: 21px; font-weight: 400; }
 .section-label-row span { color: #8a929e; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
 .dialog-summary { margin: 10px 0 0; color: #4f5a69; line-height: 1.75; font-size: 13px; }
+.synopsis-review { padding: 14px 16px; border-left: 3px solid var(--gold); background: rgba(214,169,68,.09); }
+.synopsis-review .section-label-row span { color: #8d6820; }
 .dialog-actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 22px; }
 .source-link { color: var(--red); font-size: 12px; text-decoration: none; border-bottom: 1px solid rgba(179,32,42,.35); }
 .translation-note { color: #8a929e; font-size: 10px; }
