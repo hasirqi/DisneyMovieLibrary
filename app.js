@@ -55,6 +55,10 @@
     const titleEn = text(item.title_en || item.title || item.name || item.originalTitle, "Unknown title");
     const titleCn = text(item.title_cn || item.chineseTitle, titleEn);
     const studioRaw = text(item.studio || item.production || item.type);
+    const englishCredit = (value) => {
+      const normalized = text(value);
+      return !normalized || normalized === "资料暂缺" ? "Not available" : normalized;
+    };
     return {
       id: text(item.id, `${titleEn}-${index}`),
       title_cn: titleCn,
@@ -72,9 +76,9 @@
       ,featured_rank: Number(item.featured_rank) || 0
       ,title_cn_source: text(item.title_cn_source)
       ,director_cn: text(item.director_cn || item.director, "资料暂缺")
-      ,director_en: text(item.director_en || item.director, "Not available")
+      ,director_en: englishCredit(item.director_en || item.director)
       ,cast_cn: text(item.cast_cn || item.cast, "资料暂缺")
-      ,cast_en: text(item.cast_en || item.cast, "Not available")
+      ,cast_en: englishCredit(item.cast_en || item.cast)
       ,summary_cn: text(item.summary_cn || item.summary, "暂无中文简介。")
       ,summary_en: text(item.summary_en || item.summary, "No English synopsis available.")
     };
@@ -242,24 +246,26 @@
   function openMovie(id) {
     const movie = state.movies.find((item) => item.id === id);
     if (!movie) return;
+    const director = movie.director_en && movie.director_en !== "Not available" ? movie.director_en : "Information not available";
+    const cast = movie.cast_en && movie.cast_en !== "Not available" ? movie.cast_en : "Information not available";
+    const synopsis = movie.summary_en && movie.summary_en !== "No English synopsis available." ? movie.summary_en : "An English synopsis has not been added yet.";
+    const availableFields = [movie.year, movie.studio, movie.runtime !== "—", director !== "Information not available", cast !== "Information not available", synopsis !== "An English synopsis has not been added yet."].filter(Boolean).length;
+    const completeness = Math.round((availableFields / 6) * 100);
     els.dialogContent.innerHTML = `
       <div class="dialog-layout">
         <div class="dialog-poster">${posterMarkup(movie)}</div>
         <div class="dialog-info">
           <p class="eyebrow"><span></span>${escapeHTML(movie.studio)}</p>
-          <h2>${escapeHTML(movie.title_cn)}</h2>
-          <p class="dialog-en">${escapeHTML(movie.title_en)}</p>
-          <div class="dialog-meta"><span>${movie.year || "年份未知"}</span><span>${escapeHTML(movie.runtime)}</span><span>★ ${movie.rating ? movie.rating.toFixed(1) : "暂无评分"}</span>${movie.title_cn_source === "machine_translation" ? "<span>机器辅助译名</span>" : ""}</div>
-          <div class="dialog-lang-tabs" role="group" aria-label="详情语言"><button class="active" type="button" data-dialog-lang="cn">中文</button><button type="button" data-dialog-lang="en">English</button></div>
-          <div data-dialog-panel="cn">
-            <p class="dialog-summary">${escapeHTML(movie.summary_cn)}</p>
-            <div class="credits"><div><small>导演</small><p>${escapeHTML(movie.director_cn)}</p></div><div><small>主演 / 主要配音</small><p>${escapeHTML(movie.cast_cn)}</p></div></div>
-          </div>
-          <div data-dialog-panel="en" hidden>
-            <p class="dialog-summary" lang="en">${escapeHTML(movie.summary_en)}</p>
-            <div class="credits"><div><small>DIRECTOR</small><p>${escapeHTML(movie.director_en)}</p></div><div><small>CAST / VOICES</small><p>${escapeHTML(movie.cast_en)}</p></div></div>
-          </div>
-          ${movie.source_url ? `<a class="source-link" href="${escapeHTML(movie.source_url)}" target="_blank" rel="noopener noreferrer">在 Wikipedia 查看来源 ↗</a>` : ""}
+          <div class="dialog-title-row"><div><h2>${escapeHTML(movie.title_cn)}</h2><p class="dialog-en" lang="en">${escapeHTML(movie.title_en)}</p></div><span class="dialog-year">${movie.year || "—"}</span></div>
+          <dl class="movie-facts" lang="en">
+            <div><dt>Director</dt><dd>${escapeHTML(director)}</dd></div>
+            <div><dt>Cast / Voices</dt><dd>${escapeHTML(cast)}</dd></div>
+            <div><dt>Studio</dt><dd>${escapeHTML(movie.studio)}</dd></div>
+            <div><dt>Runtime</dt><dd>${escapeHTML(movie.runtime)}</dd></div>
+            <div><dt>Rating</dt><dd>${movie.rating ? `★ ${movie.rating.toFixed(1)}` : "Not rated"}</dd></div>
+          </dl>
+          <section class="synopsis" aria-labelledby="synopsisTitle" lang="en"><div class="section-label-row"><h3 id="synopsisTitle">Synopsis</h3><span>${completeness}% record complete</span></div><p class="dialog-summary">${escapeHTML(synopsis)}</p></section>
+          <div class="dialog-actions">${movie.source_url ? `<a class="source-link" href="${escapeHTML(movie.source_url)}" target="_blank" rel="noopener noreferrer">View source on Wikipedia ↗</a>` : ""}${movie.title_cn_source === "machine_translation" ? "<span class=\"translation-note\">Chinese title is machine-assisted</span>" : ""}</div>
         </div>
       </div>`;
     els.dialog.showModal();
@@ -291,13 +297,6 @@
   els.grid.addEventListener("keydown", (event) => { if (["Enter", " "].includes(event.key)) { event.preventDefault(); openMovie(event.target.closest("[data-id]")?.dataset.id); } });
   $(".dialog-close").addEventListener("click", () => els.dialog.close());
   els.dialog.addEventListener("click", (event) => { if (event.target === els.dialog) els.dialog.close(); });
-  els.dialog.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-dialog-lang]");
-    if (!button) return;
-    const language = button.dataset.dialogLang;
-    els.dialog.querySelectorAll("[data-dialog-lang]").forEach((item) => item.classList.toggle("active", item === button));
-    els.dialog.querySelectorAll("[data-dialog-panel]").forEach((panel) => { panel.hidden = panel.dataset.dialogPanel !== language; });
-  });
   $("#backToTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   document.addEventListener("keydown", (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); els.search.focus(); }
