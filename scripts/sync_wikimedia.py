@@ -183,6 +183,8 @@ def build() -> list[dict[str, Any]]:
         print(f"{category}: {len(members)}")
         for member in members:
             title = member["title"]
+            if title.startswith(("List of ", "Lists of ")):
+                continue
             assignments.setdefault(title, studio)
             page_ids[title] = member["pageid"]
 
@@ -207,7 +209,9 @@ def build() -> list[dict[str, Any]]:
         page = pages.get(title_en, {})
         qid = page.get("pageprops", {}).get("wikibase_item", "")
         entity = entities.get(qid, {})
-        title_cn = next((x.get("title", "") for x in page.get("langlinks", []) if x.get("title")), title_en)
+        wikipedia_cn = next((x.get("title", "") for x in page.get("langlinks", []) if x.get("title")), "")
+        wikidata_cn = entity.get("labels", {}).get("zh", {}).get("value", "")
+        title_cn = wikipedia_cn or wikidata_cn or title_en
         year = release_year(entity, page.get("extract", ""))
         director_names = [label(directors.get(item, {})) for item in claim_ids(entity, "P57")]
         summary = re.sub(r"\s+", " ", page.get("extract", "")).strip()
@@ -225,6 +229,7 @@ def build() -> list[dict[str, Any]]:
             "source": "Wikipedia / Wikidata",
             "source_url": f"https://en.wikipedia.org/?curid={page_ids[title_en]}",
             "wikidata_id": qid,
+            "title_cn_source": "wikipedia" if wikipedia_cn else "wikidata" if wikidata_cn else "english_fallback",
         })
 
     # Preserve the hand-curated Chinese entries and summaries for well-known

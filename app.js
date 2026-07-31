@@ -70,6 +70,7 @@
       ,source: text(item.source)
       ,source_url: text(item.source_url)
       ,featured_rank: Number(item.featured_rank) || 0
+      ,title_cn_source: text(item.title_cn_source)
     };
   };
 
@@ -140,7 +141,11 @@
         apiMovies = [];
       }
     }
-    state.movies = unique([...apiMovies, ...local]).map((movie, index) => ({ ...movie, id: `${movie.id}-${index}` }));
+    // The encyclopedia catalog is richer than the character API and contains
+    // verified bilingual titles. Keep it authoritative once it is complete;
+    // remote results remain useful only when the local catalog is small.
+    const combined = local.length >= 800 ? local : [...apiMovies, ...local];
+    state.movies = unique(combined).map((movie, index) => ({ ...movie, id: `${movie.id}-${index}` }));
     if (!state.movies.length) throw new Error("远程接口与本地数据均不可用");
     if (failures.length) {
       showStatus("warning", "已启用本地精选片库", `远程数据源暂时不可用；当前仍可浏览、搜索与筛选 ${state.movies.length} 部作品。`, false);
@@ -238,7 +243,7 @@
           <p class="eyebrow"><span></span>${escapeHTML(movie.studio)}</p>
           <h2>${escapeHTML(movie.title_cn)}</h2>
           <p class="dialog-en">${escapeHTML(movie.title_en)}</p>
-          <div class="dialog-meta"><span>${movie.year || "年份未知"}</span><span>${escapeHTML(movie.runtime)}</span><span>★ ${movie.rating ? movie.rating.toFixed(1) : "暂无评分"}</span></div>
+          <div class="dialog-meta"><span>${movie.year || "年份未知"}</span><span>${escapeHTML(movie.runtime)}</span><span>★ ${movie.rating ? movie.rating.toFixed(1) : "暂无评分"}</span>${movie.title_cn_source === "machine_translation" ? "<span>机器辅助译名</span>" : ""}</div>
           <p class="dialog-summary">${escapeHTML(movie.summary)}</p>
           <div class="credits"><div><small>导演</small><p>${escapeHTML(movie.director)}</p></div><div><small>主演 / 主要配音</small><p>${escapeHTML(movie.cast)}</p></div></div>
           ${movie.source_url ? `<a class="source-link" href="${escapeHTML(movie.source_url)}" target="_blank" rel="noopener noreferrer">在 Wikipedia 查看来源 ↗</a>` : ""}

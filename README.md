@@ -71,4 +71,6 @@ python3 scripts/sync_wikimedia.py
 
 脚本从 Wikipedia 的迪士尼旗下主要电影分类获取影片列表，并通过 Wikipedia/Wikidata 补充中文标题、首映年份、简介、页面图片、导演和来源链接。生成结果会同时写入 `data/movies.json` 与供 `file://` 使用的 `data/movies.js`。Wikidata 结构化数据采用 CC0；Wikipedia 摘要与图片的具体许可请以相应来源页面为准。
 
+如需为没有中文百科标签的长尾影片补齐中文名，运行 `python3 scripts/enrich_chinese_titles.py`。脚本优先采用 Wikidata 中文标签，其余条目使用机器辅助译名，并通过 `title_cn_source` 字段明确标记，不将其冒充为官方译名。
+
 首页精选作品的海报预览图片来自 [The Movie Database (TMDB)](https://www.themoviedb.org/)。本项目不受 TMDB 认可或认证。
