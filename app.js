@@ -72,6 +72,9 @@
       cast: Array.isArray(item.cast) ? item.cast.join("、") : text(item.cast || item.actors || item.starring, "资料暂缺"),
       rating: Number.parseFloat(item.rating || item.imdbRating || item.score) || 0,
       runtime: text(item.runtime || item.duration, "—")
+      ,box_office_amount: Number(item.box_office_amount) || 0
+      ,box_office_currency: text(item.box_office_currency)
+      ,box_office_scope: text(item.box_office_scope)
       ,source: text(item.source)
       ,source_url: text(item.source_url)
       ,featured_rank: Number(item.featured_rank) || 0
@@ -207,6 +210,18 @@
     return `${fallback}<img class="${className}" src="${escapeHTML(movie.poster_url)}" alt="${escapeHTML(movie.title_cn)} 海报" loading="lazy" onerror="this.remove()">`;
   }
 
+  function formatBoxOffice(movie, compact = false) {
+    if (!movie.box_office_amount || movie.box_office_currency !== "USD") return "";
+    const amount = movie.box_office_amount;
+    const money = compact
+      ? amount >= 1e9 ? `$${(amount / 1e9).toFixed(2).replace(/\.00$/, "")}B`
+        : amount >= 1e6 ? `$${(amount / 1e6).toFixed(1).replace(/\.0$/, "")}M`
+          : `$${Math.round(amount / 1e3)}K`
+      : `$${amount.toLocaleString("en-US")}`;
+    const scope = movie.box_office_scope === "worldwide" ? "全球票房" : "美国票房";
+    return `${scope} · ${money}`;
+  }
+
   function render() {
     const start = (state.page - 1) * PAGE_SIZE;
     const pageItems = state.filtered.slice(start, start + PAGE_SIZE);
@@ -220,7 +235,7 @@
           <span class="card-year">${movie.year || "年份未知"}</span>
           <h3>${escapeHTML(movie.title_cn)}</h3>
           <span class="en-title">${escapeHTML(movie.title_en)}</span>
-          <div class="card-footer"><span class="rating">${movie.rating ? movie.rating.toFixed(1) : "暂无评分"}</span><span class="details-link">查看详情 →</span></div>
+          <div class="card-footer">${formatBoxOffice(movie, true) ? `<span class="box-office">${formatBoxOffice(movie, true)}</span>` : "<span></span>"}<span class="details-link">查看详情 →</span></div>
         </div>
       </article>
     `).join("");
@@ -269,7 +284,7 @@
             <div><dt>Cast / Voices</dt><dd>${escapeHTML(cast)}</dd></div>
             <div><dt>Studio</dt><dd>${escapeHTML(movie.studio)}</dd></div>
             <div><dt>Runtime</dt><dd>${escapeHTML(movie.runtime)}</dd></div>
-            <div><dt>Rating</dt><dd>${movie.rating ? `★ ${movie.rating.toFixed(1)}` : "Not rated"}</dd></div>
+            ${formatBoxOffice(movie) ? `<div><dt>${movie.box_office_scope === "worldwide" ? "Worldwide Gross" : "U.S. Gross"}</dt><dd>${formatBoxOffice(movie).split(" · ")[1]}</dd></div>` : ""}
           </dl>
           <section class="synopsis${synopsisMissing ? " synopsis-review" : ""}" aria-labelledby="synopsisTitle">
             <div class="section-label-row"><h3 id="synopsisTitle">Synopsis</h3><span>${synopsisMissing ? "Source review needed" : `${completeness}% record complete`}</span></div>

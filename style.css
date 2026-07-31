@@ -89,8 +89,7 @@ kbd { padding: 5px 8px; border: 1px solid #d3cec4; border-radius: 4px; backgroun
 .card-body h3 { min-height: 48px; margin: 10px 0 3px; font-family: Georgia, "Songti SC", serif; font-size: 19px; line-height: 1.28; font-weight: 500; }
 .card-body .en-title { display: block; overflow: hidden; color: #88909c; font-size: 11px; white-space: nowrap; text-overflow: ellipsis; }
 .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 12px; border-top: 1px solid #eeeae2; color: #7a8390; font-size: 11px; }
-.rating { color: #9b741f; }
-.rating::before { content: "★"; color: var(--gold); margin-right: 4px; }
+.box-office { color: #9b741f; font-weight: 600; }
 .details-link { color: var(--red); }
 .empty-state { padding: 80px 20px; text-align: center; }
 .empty-state span { color: var(--gold); font-size: 32px; }
