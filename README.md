@@ -97,12 +97,12 @@ python3 scripts/sync_wikimedia.py
 
 首页精选作品的海报预览图片来自 [The Movie Database (TMDB)](https://www.themoviedb.org/)。本项目不受 TMDB 认可或认证。
 
-运行 `python3 scripts/enrich_posters.py --limit 250` 可按厂牌优先级补充海报。脚本只接受现有 Wikidata 实体的 TMDB 影片 ID，不按片名猜测匹配，并跳过 `duplicate_of` 指向的别名记录；图片地址会写回 `movies.json` 与离线镜像 `movies.js`，查询结果缓存于 `data/poster_cache.json`。外部页面曾临时失败时，可增加 `--retry-empty` 重试空缓存。
+运行 `python3 scripts/enrich_posters.py --limit 250` 可按厂牌优先级补充海报。脚本优先接受现有 Wikidata 实体的 TMDB 影片 ID，并跳过 `duplicate_of` 指向的别名记录；图片地址会写回 `movies.json` 与离线镜像 `movies.js`，查询结果缓存于 `data/poster_cache.json`。外部页面曾临时失败时，可增加 `--retry-empty` 重试空缓存。对于身份 ID 缺失或错误的条目，可显式增加 `--strict-title-year-fallback`；此模式仅在标准化英文片名和上映年份同时完全一致时接受 TMDB 搜索结果，年份未知的条目不会自动配图。
 
 运行 `python3 scripts/enrich_box_office.py` 可导入 Wikidata P2142 票房数据。脚本只接受明确标注为全球或美国范围的美元金额，优先全球累计票房；无地区限定、币种不明或其他币种的数据不会展示。
 
 当前共有 460 部影片具备符合上述口径的票房数据。卡片使用 `$968.5M`、`$2.80B` 等紧凑格式，详情页显示完整金额；没有可靠数据的影片不显示票房占位项。
 
-当前 3,475 部主影片中已有 2,595 部具备图片，其中 2,455 部通过 Wikidata → TMDB ID 的确定性关联取得正式海报。主影片厂牌覆盖包括迪士尼动画 109/115、皮克斯 28/36、漫威 37/39、星球大战 38/50、纪录片 15/20、真人电影 785/796、二十世纪影业 1,583/2,419。
+当前 3,472 部主影片中已有 3,412 部具备图片，其中 3,272 部通过 TMDB 电影身份或严格片名＋年份校验取得正式海报，主影片图片覆盖率为 98.3%。主影片厂牌覆盖包括迪士尼动画 113/115、皮克斯 33/34、漫威 39/39、星球大战 45/50、纪录片 18/19、真人电影 785/796、二十世纪影业 2,379/2,419。剩余 60 条主要是未制作/未上映项目、系列合集、年份未知记录，以及没有可靠数字海报的 1930 年代英国短片；它们保留无图状态，不使用相似片名或人物照片冒充海报。
 
-运行 `python3 scripts/repair_catalog_identity.py` 可重建影片身份关系。目前 3,534 条原始档案对应 3,475 部主影片和 59 条同片别名；跨年份 Wikidata/TMDB ID 冲突为 0。
+运行 `python3 scripts/repair_catalog_identity.py` 可重建影片身份关系。目前 3,534 条原始档案对应 3,472 部主影片和 62 条同片别名；跨年份 Wikidata/TMDB ID 冲突为 0。

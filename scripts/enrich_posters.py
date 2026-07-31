@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Enrich verified movie posters through Wikidata TMDB IDs.
 
-The script never guesses by title. It follows each catalog record's Wikidata
-entity to property P4947 (TMDB movie ID), then reads the first TMDB poster image
-from that movie's public page. Results are cached and written to both offline
-catalog formats.
+The default path never guesses by title. An optional strict fallback accepts a
+TMDB search result only when its normalized English title and release year both
+exactly match the catalog record. Results are cached and written to both
+offline catalog formats.
 """
 
 from __future__ import annotations
@@ -15,6 +15,8 @@ import json
 import re
 import subprocess
 import time
+import unicodedata
+import urllib.parse
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -68,6 +70,36 @@ def poster_from_tmdb(movie_id: str) -> str:
     return ""
 
 
+def normalized_title(value: str) -> str:
+    value = re.sub(r"\s*\((?:\d{4}\s+)?(?:film|movie)\)\s*$", "", value, flags=re.IGNORECASE)
+    value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii").lower()
+    return re.sub(r"[^a-z0-9]+", "", value)
+
+
+def strict_tmdb_match(title: str, year: int) -> tuple[str, str]:
+    """Return TMDB ID and poster only for an exact normalized title/year match."""
+    query = urllib.parse.quote_plus(title)
+    search = curl(f"https://www.themoviedb.org/search/movie?query={query}")
+    movie_ids = list(dict.fromkeys(re.findall(r'href="/movie/(\d+)(?:-[^"?#]*)?', search)))[:8]
+    expected = normalized_title(title)
+    for movie_id in movie_ids:
+        try:
+            page = curl(f"https://www.themoviedb.org/movie/{movie_id}")
+        except subprocess.CalledProcessError:
+            continue
+        title_match = re.search(r'<meta\s+property="og:title"\s+content="([^"]+)"', page, re.IGNORECASE)
+        year_match = re.search(r'<span\s+class="tag release_date">\((\d{4})\)</span>', page, re.IGNORECASE)
+        if not title_match or not year_match:
+            continue
+        actual_title = html.unescape(title_match.group(1))
+        if normalized_title(actual_title) != expected or int(year_match.group(1)) != year:
+            continue
+        poster = poster_from_tmdb(movie_id)
+        if poster:
+            return movie_id, poster
+    return "", ""
+
+
 def write_catalog(movies: list[dict[str, Any]]) -> None:
     payload = json.dumps(movies, ensure_ascii=False, separators=(",", ":"))
     JSON_PATH.write_text(payload + "\n", encoding="utf-8")
@@ -80,6 +112,11 @@ def main() -> None:
     parser.add_argument("--studios", nargs="+", default=DEFAULT_STUDIOS, help="studio priority order")
     parser.add_argument("--delay", type=float, default=0.12, help="delay between TMDB page requests")
     parser.add_argument("--retry-empty", action="store_true", help="retry cached empty TMDB responses")
+    parser.add_argument(
+        "--strict-title-year-fallback",
+        action="store_true",
+        help="search TMDB only when both normalized English title and release year match exactly",
+    )
     args = parser.parse_args()
 
     movies: list[dict[str, Any]] = json.loads(JSON_PATH.read_text(encoding="utf-8"))
@@ -122,6 +159,28 @@ def main() -> None:
             movie["tmdb_id"] = movie_id
             updated += 1
             print(f"+ {movie['studio']} | {movie['title_en']} ({movie.get('year') or '?'})")
+
+    if args.strict_title_year_fallback:
+        unresolved = [
+            movie for movie in movies
+            if not movie.get("duplicate_of")
+            and not movie.get("poster_url")
+            and int(movie.get("year") or 0) > 0
+        ]
+        for movie in unresolved:
+            try:
+                movie_id, poster = strict_tmdb_match(movie.get("title_en", ""), int(movie["year"]))
+            except subprocess.CalledProcessError:
+                movie_id, poster = "", ""
+            if poster:
+                movie["poster_url"] = poster
+                movie["poster_source"] = "TMDB_EXACT_TITLE_YEAR"
+                movie["tmdb_id"] = movie_id
+                cache[movie_id] = poster
+                updated += 1
+                print(f"+ exact title/year | {movie['title_en']} ({movie['year']})")
+            time.sleep(args.delay)
+        CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     write_catalog(movies)
     primary = [movie for movie in movies if not movie.get("duplicate_of")]

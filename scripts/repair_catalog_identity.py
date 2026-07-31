@@ -62,14 +62,25 @@ def main() -> None:
     # The Avengers detail page used an early-premiere year and belongs to 2012.
     for movie in movies:
         if movie.get("title_en") == "The Lion King" and movie.get("year") == 2019:
+            identity_was_wrong = movie.get("wikidata_id") != "Q27044293" or str(movie.get("tmdb_id")) != "420818"
             movie["wikidata_id"] = "Q27044293"
             movie["tmdb_id"] = "420818"
-            movie.pop("source_url", None)
-            for field in ("poster_url", "poster_source", "box_office_amount", "box_office_currency",
-                          "box_office_scope", "box_office_source"):
-                movie.pop(field, None)
+            if identity_was_wrong:
+                movie.pop("source_url", None)
+                for field in ("poster_url", "poster_source", "box_office_amount", "box_office_currency",
+                              "box_office_scope", "box_office_source"):
+                    movie.pop(field, None)
         if movie.get("title_en") == "The Avengers (2012 film)" and movie.get("year") == 2011:
             movie["year"] = 2012
+        # Normalize obsolete planned years and a regional-release split. These
+        # pairs resolve to the same TMDB film, so the older raw record becomes
+        # an alias after grouping instead of masquerading as a separate sequel.
+        if movie.get("title_en") == "Finding Dory" and movie.get("year") == 2015:
+            movie["year"] = 2016
+        if movie.get("title_en") == "The Good Dinosaur" and movie.get("year") == 2014:
+            movie["year"] = 2015
+        if movie.get("title_en") == "Born in China" and movie.get("year") == 2017:
+            movie["year"] = 2016
     for index, movie in enumerate(movies):
         movie["catalog_id"] = catalog_id(movie, index)
         movie.pop("duplicate_of", None)
