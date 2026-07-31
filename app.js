@@ -289,6 +289,9 @@
     const cast = movie.cast_en && movie.cast_en !== "Not available" ? movie.cast_en : "Information not available";
     const synopsisMissing = !movie.summary_en || movie.summary_en === "No verified English synopsis available.";
     const synopsis = synopsisMissing ? "This synopsis is being reviewed because the available source could not be reliably matched to this film." : movie.summary_en;
+    const synopsisCn = synopsisMissing
+      ? "该影片的简介来源正在复核中，确认与影片准确对应后再展示中文翻译。"
+      : (movie.summary_cn && movie.summary_cn !== "暂无中文简介。" ? movie.summary_cn : "中文简介尚待补充。");
     const availableFields = [movie.year, movie.studio, movie.runtime !== "—", director !== "Information not available", cast !== "Information not available", !synopsisMissing].filter(Boolean).length;
     const completeness = Math.round((availableFields / 6) * 100);
     els.dialogContent.innerHTML = `
@@ -304,8 +307,12 @@
             <div><dt>Runtime</dt><dd>${escapeHTML(movie.runtime)}</dd></div>
             <div><dt>Rating</dt><dd>${movie.rating ? `★ ${movie.rating.toFixed(1)}` : "Not rated"}</dd></div>
           </dl>
-          <section class="synopsis${synopsisMissing ? " synopsis-review" : ""}" aria-labelledby="synopsisTitle" lang="en"><div class="section-label-row"><h3 id="synopsisTitle">Synopsis</h3><span>${synopsisMissing ? "Source review needed" : `${completeness}% record complete`}</span></div><p class="dialog-summary">${escapeHTML(synopsis)}</p></section>
-          <div class="dialog-actions">${movie.source_url ? `<a class="source-link" href="${escapeHTML(movie.source_url)}" target="_blank" rel="noopener noreferrer">View source on Wikipedia ↗</a>` : ""}${movie.title_cn_source === "machine_translation" ? "<span class=\"translation-note\">Chinese title is machine-assisted</span>" : ""}</div>
+          <section class="synopsis${synopsisMissing ? " synopsis-review" : ""}" aria-labelledby="synopsisTitle">
+            <div class="section-label-row"><h3 id="synopsisTitle">Synopsis</h3><span>${synopsisMissing ? "Source review needed" : `${completeness}% record complete`}</span></div>
+            <div class="synopsis-language" lang="en"><small>ENGLISH</small><p class="dialog-summary">${escapeHTML(synopsis)}</p></div>
+            <div class="synopsis-language synopsis-cn" lang="zh-CN"><small>中文翻译</small><p class="dialog-summary">${escapeHTML(synopsisCn)}</p></div>
+          </section>
+          ${movie.title_cn_source === "machine_translation" ? "<div class=\"dialog-actions\"><span class=\"translation-note\">Chinese title is machine-assisted</span></div>" : ""}
         </div>
       </div>`;
     els.dialog.showModal();
