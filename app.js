@@ -27,7 +27,7 @@
   const $ = (selector) => document.querySelector(selector);
   const els = {
     grid: $("#movieGrid"), status: $("#status"), empty: $("#emptyState"),
-    filters: $("#studioFilters"), search: $("#searchInput"), sort: $("#sortButton"),
+    filters: $("#studioFilters"), search: $("#searchInput"), sort: $("#sortSelect"),
     pagination: $("#pagination"), total: $("#totalCount"), visible: $("#visibleCount"),
     heroTotal: $("#heroTotal"), dialog: $("#movieDialog"), dialogContent: $("#dialogContent")
   };
@@ -199,9 +199,18 @@
           const rankB = b.featured_rank || Number.MAX_SAFE_INTEGER;
           return rankA - rankB || b.year - a.year || a.title_en.localeCompare(b.title_en);
         }
-        return state.sort === "desc"
-          ? (b.year - a.year || a.title_en.localeCompare(b.title_en))
-          : (a.year - b.year || a.title_en.localeCompare(b.title_en));
+        if (state.sort.startsWith("year-")) {
+          if (!a.year || !b.year) return !a.year && !b.year ? a.title_en.localeCompare(b.title_en) : !a.year ? 1 : -1;
+          return state.sort === "year-desc"
+            ? (b.year - a.year || a.title_en.localeCompare(b.title_en))
+            : (a.year - b.year || a.title_en.localeCompare(b.title_en));
+        }
+        const grossA = a.box_office_currency === "USD" ? a.box_office_amount : 0;
+        const grossB = b.box_office_currency === "USD" ? b.box_office_amount : 0;
+        if (!grossA || !grossB) return !grossA && !grossB ? (b.year - a.year || a.title_en.localeCompare(b.title_en)) : !grossA ? 1 : -1;
+        return state.sort === "box-office-desc"
+          ? (grossB - grossA || b.year - a.year || a.title_en.localeCompare(b.title_en))
+          : (grossA - grossB || b.year - a.year || a.title_en.localeCompare(b.title_en));
       });
     const maxPage = Math.max(1, Math.ceil(state.filtered.length / PAGE_SIZE));
     state.page = Math.min(state.page, maxPage);
@@ -311,10 +320,9 @@
     if (!button) return;
     state.studio = button.dataset.studio; state.page = 1; renderFilters(); applyFilters();
   });
-  els.sort.addEventListener("click", () => {
-    state.sort = state.sort === "featured" ? "desc" : state.sort === "desc" ? "asc" : "featured";
-    els.sort.querySelector("span").textContent =
-      state.sort === "featured" ? "排序：精选推荐" : state.sort === "desc" ? "年份：新 → 旧" : "年份：旧 → 新";
+  els.sort.addEventListener("change", (event) => {
+    state.sort = event.target.value;
+    state.page = 1;
     applyFilters();
   });
   els.pagination.addEventListener("click", (event) => {

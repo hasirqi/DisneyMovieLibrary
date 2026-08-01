@@ -57,12 +57,12 @@ button { color: inherit; }
 kbd { padding: 5px 8px; border: 1px solid #d3cec4; border-radius: 4px; background: #eeebe3; color: #777; font-size: 11px; box-shadow: none; }
 .filter-row { display: flex; justify-content: space-between; gap: 20px; margin-top: 18px; }
 .filter-pills { display: flex; flex-wrap: wrap; gap: 8px; }
-.filter-pill, .sort-button { border: 1px solid #ccc7bc; background: transparent; cursor: pointer; transition: .2s ease; }
+.filter-pill, .sort-control { border: 1px solid #ccc7bc; background: transparent; transition: .2s ease; }
 .filter-pill { padding: 10px 16px; border-radius: 100px; color: #626c7c; font-size: 12px; }
 .filter-pill:hover, .filter-pill.active { border-color: var(--red); background: var(--red); color: white; }
-.sort-button { flex: none; padding: 10px 14px; border-radius: 3px; color: #5f6977; font-size: 12px; }
-.sort-button:hover { border-color: var(--gold); }
-.sort-button i { margin-left: 8px; color: var(--red); font-style: normal; }
+.sort-control { flex: none; display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 13px; border-radius: 3px; color: #5f6977; font-size: 11px; letter-spacing: .08em; }
+.sort-control:hover, .sort-control:focus-within { border-color: var(--gold); }
+.sort-control select { min-height: 32px; border: 0; outline: 0; background: transparent; color: var(--ink); font: inherit; cursor: pointer; }
 
 .status { min-height: 84px; display: flex; align-items: center; justify-content: center; gap: 15px; margin: 28px 0; padding: 18px; border: 1px solid #d7d2c7; background: rgba(255,255,255,.55); text-align: left; }
 .status[hidden] { display: none; }
@@ -156,7 +156,7 @@ kbd { padding: 5px 8px; border: 1px solid #d3cec4; border-radius: 4px; backgroun
   .filter-row { display: block; }
   .filter-pills { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 9px; scrollbar-width: none; }
   .filter-pill { white-space: nowrap; }
-  .sort-button { width: 100%; margin-top: 9px; }
+  .sort-control { width: 100%; justify-content: space-between; margin-top: 9px; }
   .movie-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 12px; }
   .card-body { padding: 14px 12px; }
   .card-body h3 { min-height: 42px; font-size: 16px; }

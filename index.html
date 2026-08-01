@@ -49,9 +49,16 @@
       </label>
       <div class="filter-row">
         <div id="studioFilters" class="filter-pills" role="group" aria-label="按厂牌筛选"></div>
-        <button id="sortButton" class="sort-button" type="button" aria-label="切换年份排序">
-          <span>排序：精选推荐</span><i aria-hidden="true">⇅</i>
-        </button>
+        <label class="sort-control">
+          <span>排序</span>
+          <select id="sortSelect" aria-label="影片排序方式">
+            <option value="featured">精选推荐</option>
+            <option value="year-desc">上映年份：新 → 旧</option>
+            <option value="year-asc">上映年份：旧 → 新</option>
+            <option value="box-office-desc">票房：高 → 低</option>
+            <option value="box-office-asc">票房：低 → 高</option>
+          </select>
+        </label>
       </div>
     </section>
 
@@ -81,7 +88,7 @@
     <div id="dialogContent"></div>
   </dialog>
 
-  <script src="data/movies.js?v=posters-3"></script>
-  <script src="app.js?v=posters-3"></script>
+  <script src="data/movies.js?v=sort-1"></script>
+  <script src="app.js?v=sort-1"></script>
 </body>
 </html>
