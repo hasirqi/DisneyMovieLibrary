@@ -99,6 +99,10 @@ python3 scripts/sync_wikimedia.py
 
 运行 `python3 scripts/enrich_posters.py --limit 250` 可按厂牌优先级补充海报。脚本优先接受现有 Wikidata 实体的 TMDB 影片 ID，并跳过 `duplicate_of` 指向的别名记录；图片地址会写回 `movies.json` 与离线镜像 `movies.js`，查询结果缓存于 `data/poster_cache.json`。外部页面曾临时失败时，可增加 `--retry-empty` 重试空缓存。对于身份 ID 缺失或错误的条目，可显式增加 `--strict-title-year-fallback`；此模式仅在标准化英文片名和上映年份同时完全一致时接受 TMDB 搜索结果，年份未知的条目不会自动配图。
 
+运行 `python3 scripts/prefer_english_posters.py` 可按既有 TMDB 电影 ID 将默认图片切换为 TMDB 明确标注为英文的首选海报。没有英文海报图库的影片保留现有图片，不使用日文版、人物照片或近似影片代替；结果缓存于 `data/english_poster_cache.json`。
+
+当前已核验 3,263 个具备海报及 TMDB 身份的主影片，其中 3,154 个存在 TMDB 明确标注的英文海报；本轮替换了 628 条非首选图片。其余 109 个没有英文海报图库，因此保留原有可靠图片并等待后续补充。
+
 运行 `python3 scripts/enrich_box_office.py` 可导入 Wikidata P2142 票房数据。脚本只接受明确标注为全球或美国范围的美元金额，优先全球累计票房；无地区限定、币种不明或其他币种的数据不会展示。
 
 当前共有 460 部影片具备符合上述口径的票房数据。卡片使用 `$968.5M`、`$2.80B` 等紧凑格式，详情页显示完整金额；没有可靠数据的影片不显示票房占位项。
