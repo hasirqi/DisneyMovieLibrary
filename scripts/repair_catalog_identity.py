@@ -86,22 +86,63 @@ def main() -> None:
         movie.pop("duplicate_of", None)
         movie.pop("alias_titles", None)
 
-    groups: dict[tuple[str, int], list[dict[str, Any]]] = defaultdict(list)
-    for movie in movies:
-        key = (canonical_title(movie.get("title_en", "")), int(movie.get("year") or 0))
-        if key[0] and key[1]:
-            groups[key].append(movie)
+    # Connect records by either normalized title+year or the stronger
+    # TMDB-movie-ID+year identity. The latter catches abbreviated aliases such
+    # as "The Force Awakens" vs "Star Wars: The Force Awakens" without merging
+    # remakes or sequels released in different years.
+    parents = list(range(len(movies)))
+
+    def find(index: int) -> int:
+        while parents[index] != index:
+            parents[index] = parents[parents[index]]
+            index = parents[index]
+        return index
+
+    def union(left: int, right: int) -> None:
+        left_root, right_root = find(left), find(right)
+        if left_root != right_root:
+            parents[right_root] = left_root
+
+    identity_owner: dict[tuple[str, str, int], int] = {}
+    for index, movie in enumerate(movies):
+        year = int(movie.get("year") or 0)
+        if not year:
+            continue
+        keys = [("title", canonical_title(movie.get("title_en", "")), year)]
+        if movie.get("tmdb_id"):
+            keys.append(("tmdb", str(movie["tmdb_id"]), year))
+        for key in keys:
+            if not key[1]:
+                continue
+            if key in identity_owner:
+                union(index, identity_owner[key])
+            else:
+                identity_owner[key] = index
+
+    groups: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    for index, movie in enumerate(movies):
+        groups[find(index)].append(movie)
 
     linked = 0
     for records in groups.values():
         if len(records) < 2:
             continue
-        primary = max(records, key=quality)
+        primary = max(records, key=lambda movie: (
+            quality(movie),
+            ":" in movie.get("title_en", ""),
+            len(movie.get("title_en", "")),
+        ))
         aliases = [movie for movie in records if movie is not primary]
-        primary["alias_titles"] = sorted({
+        primary_original_title = primary.get("title_en", "")
+        shared_tmdb = {str(movie["tmdb_id"]) for movie in records if movie.get("tmdb_id")}
+        if len(shared_tmdb) == 1:
+            preferred_title = max((movie.get("title_en", "") for movie in records), key=lambda title: (":" in title, len(title)))
+            if ":" in preferred_title and ":" not in primary_original_title:
+                primary["title_en"] = preferred_title
+        primary["alias_titles"] = sorted(({
             title for movie in aliases
             for title in (movie.get("title_en", ""), movie.get("title_cn", "")) if title
-        })
+        } | ({primary_original_title} if primary_original_title != primary.get("title_en") else set())) - {primary.get("title_en", "")})
         for alias in aliases:
             alias["duplicate_of"] = primary["catalog_id"]
             # The detailed film entity is authoritative for identity. Preserve
